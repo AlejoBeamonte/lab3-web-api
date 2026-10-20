@@ -1,6 +1,8 @@
 package es.unizar.webeng.lab3
 
 import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -12,9 +14,6 @@ import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
-
-import io.mockk.every
-import io.mockk.verify
 
 private val MANAGER_REQUEST_BODY = { name: String ->
     """
@@ -91,15 +90,15 @@ class ControllerTests {
                 }
             }
 
-            verify(exactly = 2) {
-                employeeRepository.save(Employee("Mary", "Manager", null))
-            }
+        verify(exactly = 2) {
+            employeeRepository.save(Employee("Mary", "Manager", null))
+        }
 
-            verify(exactly = 0) {
-                employeeRepository.findById(any())
-                employeeRepository.findAll()
-                employeeRepository.deleteById(any())
-            }
+        verify(exactly = 0) {
+            employeeRepository.findById(any())
+            employeeRepository.findAll()
+            employeeRepository.deleteById(any())
+        }
     }
 
     @Test
