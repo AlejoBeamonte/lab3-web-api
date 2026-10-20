@@ -13,6 +13,9 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 
+import io.mockk.every
+import io.mockk.verify
+
 private val MANAGER_REQUEST_BODY = { name: String ->
     """
     { 
@@ -52,10 +55,13 @@ class ControllerTests {
 
     @Test
     fun `POST is not safe and not idempotent`() {
-        // SETUP - COMPLETE ME!
-        // Initial state: the collection is empty. No employee exists.
-        // Runtime state: the first save stores Mary, Manager, as id 1. The second save stores Mary, Manager, as id 2.
-        TODO("Complete the mock setup for POST test")
+        every {
+            employeeRepository.save(any<Employee>())
+        } answers {
+            Employee("Mary", "Manager", 1)
+        } andThenAnswer {
+            Employee("Mary", "Manager", 2)
+        }
 
         mvc
             .post("/employees") {
@@ -85,10 +91,15 @@ class ControllerTests {
                 }
             }
 
-        // VERIFY - COMPLETE ME!
-        // Hint: What repository methods should be called for a POST operation?
-        // What methods should NOT be called? Think about the difference between safe and unsafe operations.
-        TODO("Complete the verification for POST test")
+            verify(exactly = 2) {
+                employeeRepository.save(Employee("Mary", "Manager", null))
+            }
+
+            verify(exactly = 0) {
+                employeeRepository.findById(any())
+                employeeRepository.findAll()
+                employeeRepository.deleteById(any())
+            }
     }
 
     @Test
