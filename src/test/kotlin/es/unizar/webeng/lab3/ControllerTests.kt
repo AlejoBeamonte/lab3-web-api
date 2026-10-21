@@ -213,7 +213,7 @@ class ControllerTests {
         justRun {
             employeeRepository.deleteById(1)
         }
-        
+
         mvc.delete("/employees/1").andExpect {
             status { isNoContent() }
         }
@@ -234,17 +234,10 @@ class ControllerTests {
 
     @Test
     fun `GET collection is safe and idempotent`() {
-        // SETUP - COMPLETE ME!
-        // Initial state: the collection contains exactly Mary, Manager, id 1.
-        // Runtime state: the second GET sees that same list.
-        TODO("Complete the mock setup for the collection GET")
-
-        mvc.get("/employees").andExpect {
-            status { isOk() }
-            content {
-                contentType(MediaType.APPLICATION_JSON)
-                json(MANAGER_LIST_BODY)
-            }
+        every {
+            employeeRepository.findAll()
+        } answers {
+            listOf(Employee("Mary", "Manager", 1))
         }
 
         mvc.get("/employees").andExpect {
@@ -255,8 +248,21 @@ class ControllerTests {
             }
         }
 
-        // VERIFY - COMPLETE ME!
-        // Hint: Count the list calls. A safe list must not save, delete, or fetch one id.
-        TODO("Complete the verification for the collection GET")
+        mvc.get("/employees").andExpect {
+            status { isOk() }
+            content {
+                contentType(MediaType.APPLICATION_JSON)
+                json(MANAGER_LIST_BODY)
+            }
+        }
+
+        verify(exactly = 2) {
+            employeeRepository.findAll()
+        }
+        verify(exactly = 0) {
+            employeeRepository.save(any())
+            employeeRepository.deleteById(any())
+            employeeRepository.findById(any())
+        }
     }
 }
