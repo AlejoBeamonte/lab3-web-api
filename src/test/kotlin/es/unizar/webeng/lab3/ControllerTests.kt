@@ -154,10 +154,18 @@ class ControllerTests {
 
     @Test
     fun `PUT is idempotent but not safe`() {
-        // SETUP
-        // Initial state: /employees/1 has no representation.
-        // Runtime state: the first PUT stores Tom, Manager, at id 1. The second PUT leaves that same employee.
-        TODO("Complete the mock setup for PUT test")
+        every {
+            employeeRepository.findById(1)
+        } answers {
+            Optional.empty()
+        } andThenAnswer {
+            Optional.of(Employee("Tom", "Manager", 1))
+        }
+        every {
+            employeeRepository.save(any<Employee>())
+        } answers {
+            Employee("Tom", "Manager", 1)
+        }
 
         mvc
             .put("/employees/1") {
@@ -187,10 +195,16 @@ class ControllerTests {
                 }
             }
 
-        // VERIFY - COMPLETE ME!
-        // Hint: What repository methods should be called for PUT operations?
-        // Think about the controller logic and how many times each method should be invoked.
-        TODO("Complete the verification for PUT test")
+        verify(exactly = 2) {
+            employeeRepository.findById(1)
+        }
+        verify(exactly = 2) {
+            employeeRepository.save(Employee("Tom", "Manager", 1))
+        }
+        verify(exactly = 0) {
+            employeeRepository.deleteById(any())
+            employeeRepository.findAll()
+        }
     }
 
     @Test
