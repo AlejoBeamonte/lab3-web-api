@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
+import java.util.Optional
 
 private val MANAGER_REQUEST_BODY = { name: String ->
     """
@@ -103,10 +104,16 @@ class ControllerTests {
 
     @Test
     fun `GET is safe and idempotent`() {
-        // SETUP
-        // Initial state: /employees/1 is Mary, Manager, id 1. /employees/2 has no representation.
-        // Runtime state: both stay that way.
-        TODO("Complete the mock setup for GET test")
+        every {
+            employeeRepository.findById(1)
+        } answers {
+            Optional.of(Employee("Mary", "Manager", 1))
+        }
+        every {
+            employeeRepository.findById(2)
+        } answers {
+            Optional.empty()
+        }
 
         mvc.get("/employees/1").andExpect {
             status { isOk() }
@@ -132,10 +139,17 @@ class ControllerTests {
             status { isNotFound() }
         }
 
-        // VERIFY - COMPLETE ME!
-        // Hint: Since GET is safe, what repository methods should NOT be called?
-        // Count how many times each method was called based on the test requests.
-        TODO("Complete the verification for GET test")
+        verify(exactly = 2) {
+            employeeRepository.findById(1)
+        }
+        verify(exactly = 2) {
+            employeeRepository.findById(2)
+        }
+        verify(exactly = 0) {
+            employeeRepository.save(any())
+            employeeRepository.deleteById(any())
+            employeeRepository.findAll()
+        }
     }
 
     @Test
